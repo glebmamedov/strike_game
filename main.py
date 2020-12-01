@@ -1,90 +1,83 @@
 import pygame
-import gameClasses
-import sys
+import strike_game_classes as scls
 
 
 pygame.init()
-screen = pygame.display.set_mode((600, 500))
 
-topBorder = gameClasses.GameObject(600, 10, 0, 0)
-bottomBorder = gameClasses.GameObject(600, 10, 0, 490)
-rightBorder = gameClasses.GameObject(10, 480, 0, 10)
-leftBorder = gameClasses.GameObject(10, 480, 590, 10)
+run = True
+screen = scls.Screen()
+screen.set_screen()
 
-brick = gameClasses.GameObject(80, 10, 30, 370)
+floorBorderWidth = 10
+verticalBorderWidth = 1
+playerHeight = 60
+playerWidth = 40
 
-borders = [topBorder.shape, bottomBorder.shape, rightBorder.shape, leftBorder.shape]
-playerX = 10
-playerY = 430
-jumpH = 8
-jumpSt = False
-falling = False
+# player start position depends on connection queue
+player = scls.Player(10)
+floorBorder = scls.GameObject(
+    0, screen.height - floorBorderWidth,
+    screen.width, floorBorderWidth)
+verticalLeftBorder = scls.GameObject(
+    0, 0,
+    verticalBorderWidth, screen.height)
+verticalRightBorder = scls.GameObject(
+    screen.width - verticalBorderWidth,
+    0, verticalBorderWidth, screen.height)
 
-step = 10
-gameRun = True
+borders = [floorBorder, verticalRightBorder, verticalLeftBorder]
 
-player = gameClasses.GameObject(60, 60, playerX, playerY)
+# replace with surfaces
+verticalRightBorder.make_rect()
+verticalLeftBorder.make_rect()
+floorBorder.make_rect()
 
+player.set_pars(
+    490, screen.height - (floorBorderWidth + playerHeight),
+    playerWidth, playerHeight)
+player.make_rect()
 
-# edit func with consequences
-def player_enter(num_mas, step, x, status):
-    if num_mas[pygame.K_RIGHT]:
-        x += step
-    if num_mas[pygame.K_LEFT]:
-        x -= step
-    if keys[pygame.K_UP]:
-        status = True
-    return x, status
-
-
-def player_jump(y, high, x, jumpstat, fall):
-    x -= 1
-    if abs(x) <= 8:
-        if x > 0:
-            y -= (-(x**2) + high)//2
-        if x < 0:
-            y += (-(x**2) + high)//2
-            fall = True
-        return y, x, jumpstat, fall
-    else:
-        fall = False
-        jumpstatus = False
-        return y, x, jumpstatus, fall
-
-
-while gameRun:
+while run:
     pygame.time.delay(40)
-    playerPos = (player.x, player.y)
     keys = pygame.key.get_pressed()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            gameRun = False
+            run = False
         if keys[pygame.K_ESCAPE]:
-            gameRun = False
+            run = False
 
-    player.x, jumpSt = player_enter(keys, step, player.x, jumpSt)
+    if keys[pygame.K_LEFT]:
+        player.move_obj(-player.speed)
+    if keys[pygame.K_RIGHT]:
+        player.move_obj(player.speed)
+    if keys[pygame.K_UP]:
+        player.jumpStatus = True
+    if player.jumpStatus:
+        player.jump()
 
-    if jumpSt:
-        player.y, jumpH, jumpSt, falling = player_jump(player.y, 64, jumpH, jumpSt, falling)
-    else:
-        jumpH = 10
-    print(falling)
+    if player.fall:
+        player.player_fall()
+
+    # collisions
+    # fix border space
     for border in borders:
-        testRect = pygame.Rect(player.x, player.y, 60, 60)
-        if testRect.colliderect(border):
-            if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
-                player.x = playerPos[0]
-    if player.shape.colliderect(brick.shape):
-        if falling:
-            jumpSt = False
-            player.y = brick.height + 300
-    print(player.y)
-    player.shape = pygame.Rect(player.x, player.y, 60, 60)
-    screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (40, 240, 250), player.shape)
-    pygame.draw.rect(screen, (250, 250, 0), brick.shape)
-    pygame.draw.rect(screen, (20, 100, 50), topBorder.shape)
-    pygame.draw.rect(screen, (20, 100, 20), bottomBorder.shape)
-    pygame.draw.rect(screen, (50, 130, 60), rightBorder.shape)
-    pygame.draw.rect(screen, (10, 230, 90), leftBorder.shape)
+        testrect = pygame.Rect(player.x, player.y, playerWidth, playerHeight)
+        if testrect.colliderect(border.shape):
+            if border.shape == floorBorder.shape:
+                # for start is None
+                player.fall = False
+            if player.direction == "right":
+                player.x -= player.speed
+            if player.direction == "left":
+                player.x += player.speed
+
+    print(player.fall)
+
+    player.make_rect()
+    screen.scr.fill((0, 0, 0))
+    pygame.draw.rect(screen.scr, (0, 0, 250), player.shape)
+    pygame.draw.rect(screen.scr, (0, 250, 0), verticalRightBorder.shape)
+    pygame.draw.rect(screen.scr, (0, 250, 0), verticalLeftBorder.shape)
+    pygame.draw.rect(screen.scr, (250, 0, 0), floorBorder.shape)
     pygame.display.update()
