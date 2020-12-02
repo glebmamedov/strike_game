@@ -1,9 +1,9 @@
 import pygame
 
-
+# one class - one file
 class Game:
     def __init__(self):
-        self.GameRun = True
+        self.game_run = True
         # idk what to set here
         pass
 
@@ -47,20 +47,21 @@ class GameObject:
         if speed < 0:
             self.direction = "left"
         # maybe change to up or down dir
-        if speed == 0:
-            self.direction = "no"
 
 
 class Player(GameObject):
     def __init__(self, speed):
-        self.fall = True # changed to True
-        self.jumpHighConst = 8
-        self.jumpHigh = self.jumpHighConst
-        self.jumpMaxHigh = self.jumpHigh**2
-        self.jumpStatus = False
+
+        # changed to True
+        self.fall = True
+
+        self.jump_high_const = 8
+        self.jump_high = self.jump_high_const
+        self.jump_max_high = self.jump_high ** 2
+        self.jump_status = False
         self.speed = speed
         self.fall_par = 0
-        self.direction = ''
+        self.direction = None
 
     def set_pars(self, x, y, width, height):
         self.y = y
@@ -69,21 +70,22 @@ class Player(GameObject):
         self.height = height
 
     def jump(self):
-        if abs(self.jumpHigh) <= self.jumpHighConst:
-            # use player.y or temporary var?
-            # Now i use player.y
-            if self.jumpHigh > 0:
-                self.y -= (-(self.jumpHigh ** 2) + self.jumpMaxHigh) // 2
-            if self.jumpHigh < 0:
-                self.y += (-(self.jumpHigh ** 2) + self.jumpMaxHigh) // 2
-                # fall must be changed when collision to false
-                self.fall = True
-            self.jumpStatus = True
-            self.jumpHigh -= 1
-        else:
-            self.jumpStatus = False
-            self.jumpHigh = self.jumpHighConst
+        if self.jump_status: # added
+            if abs(self.jump_high) <= self.jump_high_const:
+                # use player.y or temporary var?
+                # Now i use player.y
+                if self.jump_high > 0:
+                    self.y -= (-(self.jump_high ** 2) + self.jump_max_high) // 2
+                if self.jump_high < 0:
+                    self.y += (-(self.jump_high ** 2) + self.jump_max_high) // 2
+                    # fall must be changed when collision to false
+                    self.fall = True
+                self.jump_status = True
+                self.jump_high -= 1
+            else:
+                self.jump_status = False
+                self.jump_high = self.jump_high_const
 
     def player_fall(self):
         self.fall_par += 1
-        self.y += (self.fall_par ** 2) // 2
+        self.y += (self.fall_par ** 2)

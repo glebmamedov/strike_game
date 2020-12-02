@@ -78,6 +78,7 @@ while gameRun:
         if falling:
             jumpSt = False
             player.y = brick.height + 300
+
     print(player.y)
     player.shape = pygame.Rect(player.x, player.y, 60, 60)
     screen.fill((0, 0, 0))
